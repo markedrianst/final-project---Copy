@@ -1,234 +1,235 @@
+/**
+ * Mobile Support Module
+ * Enhances the application with mobile-friendly features and touch support
+ */
+
 class MobileSupport {
-  constructor() {
-    this.isMobile = this.checkMobile();
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-    this.touchMoved = false;
-
-    if (this.isMobile) {
-      this.applyMobileOptimizations();
-    }
-
-    this.setupEventListeners();
-  }
-
-  checkMobile() {
-    return (
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Chrome|Opera Mini/i.test(
-        navigator.userAgent
-      ) || "ontouchstart" in window // fallback for touch devices
-    );
-  }
-
-  applyMobileOptimizations() {
-    document.body.classList.add("mobile-device");
-
-    // ✅ Add meta viewport to stop global pinch zoom
-    let viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (!viewportMeta) {
-      viewportMeta = document.createElement("meta");
-      viewportMeta.name = "viewport";
-      viewportMeta.content =
-        "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
-      document.head.appendChild(viewportMeta);
-    }
-
-    // Lower pixel ratio on mobile to improve FPS
-    if (window.panoramaViewer && window.panoramaViewer.renderer) {
-      window.panoramaViewer.renderer.setPixelRatio(
-        Math.min(window.devicePixelRatio || 1, 2)
-      );
-    }
-
-    // ✅ Enable pinch-to-zoom only for panorama
-    if (window.panoramaViewer && window.panoramaViewer.controls) {
-      window.panoramaViewer.controls.enableZoom = true;
-      window.panoramaViewer.controls.zoomSpeed = 1.0;
-    }
-
-    const style = document.createElement("style");
-    style.textContent = `
-      /* Make nav arrows more tappable */
-      .nav-arrow {
-        position: absolute;
-        transform: translate(-50%, -50%);
-        width: clamp(40px, 8vw, 60px);
-        height: clamp(40px, 8vw, 60px);
-        will-change: transform;
-      }
-      .nav-arrow i {
-        font-size: clamp(18px, 5vw, 28px);
-      }
-
-      /* Search bar scaling */
-      #search-input {
-        font-size: clamp(14px, 3vw, 18px);
-        height: clamp(36px, 5vh, 48px);
-      }
-
-      /* Search results scale better */
-      .search-result-item {
-        padding: clamp(10px, 2vw, 16px);
-        font-size: clamp(12px, 3vw, 16px);
-      }
-
-      /* Make buttons tap-friendly */
-      button {
-        min-width: 40px;
-        min-height: 40px;
-        font-size: clamp(14px, 3vw, 18px);
-      }
-
-      /* Ensure panorama container always fits */
-      #panorama-container {
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        touch-action: pinch-zoom; /* ✅ allow pinch-zoom only here */
-      }
-
-      /* Prevent UI elements from scaling */
-      body, #search-input, button, .search-result-item {
-        touch-action: manipulation; /* ✅ disable pinch-zoom on UI */
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  setupEventListeners() {
-    const panoramaContainer = document.getElementById("panorama-container");
-    if (!panoramaContainer) return;
-
-    // Touch start
-    panoramaContainer.addEventListener(
-      "touchstart",
-      (e) => {
-        this.touchStartX = e.touches[0].clientX;
-        this.touchStartY = e.touches[0].clientY;
+    constructor() {
+        this.isMobile = this.checkMobile();
+        this.touchStartX = 0;
+        this.touchStartY = 0;
         this.touchMoved = false;
-      },
-      { passive: true }
-    );
 
-    // Touch move (detect drag vs tap)
-    panoramaContainer.addEventListener(
-      "touchmove",
-      () => {
-        this.touchMoved = true;
-      },
-      { passive: true }
-    );
-
-    // Touch end (handle taps)
-    panoramaContainer.addEventListener(
-      "touchend",
-      (e) => {
-        if (!this.touchMoved) {
-          const touch = e.changedTouches[0];
-          const element = document.elementFromPoint(
-            touch.clientX,
-            touch.clientY
-          );
-
-          if (
-            element &&
-            (element.classList.contains("nav-arrow") ||
-              element.closest(".nav-arrow"))
-          ) {
-            const arrow = element.classList.contains("nav-arrow")
-              ? element
-              : element.closest(".nav-arrow");
-            const targetId = arrow.dataset.target;
-
-            if (window.transitionManager && targetId) {
-              const currentId =
-                window.panoramaViewer.getCurrentId?.() || null;
-
-              // 🔒 Lock arrow reposition
-              if (window.navigationManager) {
-                window.navigationManager.isLocked = true;
-              }
-
-              window.transitionManager.startTransition(currentId, targetId);
-
-              // 🔓 Unlock after transition ends (~0.9s)
-              setTimeout(() => {
-                if (window.navigationManager) {
-                  window.navigationManager.isLocked = false;
-                  window.navigationManager.updateArrowPositions(
-                    window.panoramaViewer.camera
-                  );
-                }
-              }, 950);
-            } else {
-              arrow.click();
-            }
-          }
+        if (this.isMobile) {
+            this.applyMobileOptimizations();
         }
-      },
-      { passive: true }
-    );
 
-    // Desktop clicks
-    document.addEventListener("click", (e) => {
-      const arrow = e.target.closest(".nav-arrow");
-      if (arrow) {
-        const targetId = arrow.dataset.target;
-        if (window.transitionManager && targetId) {
-          const currentId = window.panoramaViewer.getCurrentId?.() || null;
+        this.setupEventListeners();
 
-          // 🔒 Lock arrow reposition
-          if (window.navigationManager) {
-            window.navigationManager.isLocked = true;
-          }
-
-          window.transitionManager.startTransition(currentId, targetId);
-
-          // 🔓 Unlock after transition ends (~0.9s)
-          setTimeout(() => {
-            if (window.navigationManager) {
-              window.navigationManager.isLocked = false;
-              window.navigationManager.updateArrowPositions(
-                window.panoramaViewer.camera
-              );
+        // Handle resize to adjust optimizations dynamically
+        window.addEventListener('resize', () => {
+            if (this.isMobile) {
+                this.applyMobileOptimizations();
             }
-          }, 950);
-
-          e.preventDefault();
-        }
-      }
-    });
-
-    // Resize + orientation support
-    window.addEventListener("resize", () => this.handleResize());
-    window.addEventListener("orientationchange", () =>
-      this.handleResize()
-    );
-  }
-
-  handleResize() {
-    setTimeout(() => {
-      if (window.panoramaViewer) {
-        window.panoramaViewer.onWindowResize();
-      }
-      if (window.navigationManager && !window.navigationManager.isLocked) {
-        window.navigationManager.updateArrowPositions(
-          window.panoramaViewer.camera
-        );
-      }
-    }, 300);
-  }
-
-  enableFullscreen() {
-    const element = document.documentElement;
-    if (element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if (element.webkitRequestFullscreen) {
-      element.webkitRequestFullscreen();
-    } else if (element.msRequestFullscreen) {
-      element.msRequestFullscreen();
+        });
     }
-  }
+
+    /**
+     * Check if the device is mobile
+     * @returns {boolean} - True if the device is mobile
+     */
+    checkMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    /**
+     * Apply mobile-specific optimizations
+     */
+    applyMobileOptimizations() {
+        // Add mobile-specific class to body if not present
+        if (!document.body.classList.contains('mobile-device')) {
+            document.body.classList.add('mobile-device');
+        }
+
+        // Adjust renderer quality for better performance on mobile
+        if (window.panoramaViewer && window.panoramaViewer.renderer) {
+            window.panoramaViewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        }
+
+        // Remove existing mobile styles if present to avoid duplicates
+        const existingStyle = document.getElementById('mobile-support-style');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+
+        // Add responsive mobile-specific styles with relative units
+        const style = document.createElement('style');
+        style.id = 'mobile-support-style';
+        style.textContent = `
+         .mobile-device #location-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-height: 35vh;
+            background-color: rgba(255, 255, 255, 0.48);
+            color: #000000ff;
+            font-size: 1rem;
+            padding: 1rem;
+            box-sizing: border-box;
+            overflow-y: auto;
+            z-index: 1000;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .mobile-device #location-info h2 {
+            font-size: 1.2rem;
+            margin: 0 0 0.5rem 0;
+            word-break: break-word;
+        }
+
+        .mobile-device #location-info p {
+            font-size: 1rem;
+            margin: 0;
+            word-break: break-word;
+        }
+
+        @media (max-width: 375px) {
+            .mobile-device #location-info {
+                font-size: 0.95rem;
+                padding: 0.75rem;
+            }
+
+            .mobile-device #location-info h2 {
+                font-size: 1rem;
+            }
+
+            .mobile-device #location-info p {
+                font-size: 0.9rem;
+            }
+        }
+
+        #panorama-container {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none; /* Disable default touch gestures */
+        }
+
+        .mobile-device .nav-arrow {
+            width: 12vw;
+            height: 12vw;
+            max-width: 60px;
+            max-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mobile-device .nav-arrow i {
+            font-size: 4vw;
+            max-font-size: 24px;
+            pointer-events: none;
+        }
+
+        .mobile-device #search-input {
+            font-size: 1rem;
+            height: 3rem;
+            width: 90vw;
+            max-width: 400px;
+            box-sizing: border-box;
+            padding: 0.5rem 1rem;
+        }
+
+        .mobile-device .search-result-item {
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.48);
+        }
+
+        @media (max-width: 320px) {
+            .mobile-device .nav-arrow {
+                width: 40px;
+                height: 40px;
+            }
+            .mobile-device .nav-arrow i {
+                font-size: 16px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .mobile-device .nav-arrow {
+                width: 60px;
+                height: 60px;
+            }
+            .mobile-device .nav-arrow i {
+                font-size: 24px;
+            }
+        }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /**
+     * Set up event listeners for mobile interactions
+     */
+    setupEventListeners() {
+        const panoramaContainer = document.getElementById('panorama-container');
+        if (!panoramaContainer) return;
+
+        // Touch start
+        panoramaContainer.addEventListener('touchstart', (e) => {
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+            this.touchMoved = false;
+        }, { passive: true }); // ✅ passive true, no preventDefault
+
+        // Touch move (keep passive unless blocking scroll)
+        panoramaContainer.addEventListener('touchmove', (e) => {
+            this.touchMoved = true;
+        }, { passive: true });
+
+        // Touch end → detect tap
+        panoramaContainer.addEventListener('touchend', (e) => {
+            if (!this.touchMoved) {
+                const touch = e.changedTouches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (element && (element.classList.contains('nav-arrow') || element.closest('.nav-arrow'))) {
+                    const arrow = element.classList.contains('nav-arrow') ? element : element.closest('.nav-arrow');
+                    arrow.click();
+                }
+            }
+        }, { passive: true });
+
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            this.handleOrientationChange();
+        });
+    }
+
+    /**
+     * Handle device orientation change
+     */
+    handleOrientationChange() {
+        setTimeout(() => {
+            if (window.panoramaViewer) {
+                window.panoramaViewer.onWindowResize();
+            }
+            if (this.isMobile) {
+                this.applyMobileOptimizations(); // ✅ reapply optimizations
+            }
+            if (window.navigationManager && window.panoramaViewer) {
+                window.navigationManager.updateArrowPositions(window.panoramaViewer.camera);
+            }
+        }, 300);
+    }
+
+    /**
+     * Enable fullscreen mode with all vendor prefixes
+     */
+    enableFullscreen() {
+        const element = document.documentElement;
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) { 
+            element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) { 
+            element.msRequestFullscreen();
+        } else if (element.mozRequestFullScreen) { 
+            element.mozRequestFullScreen();
+        }
+    }
 }
 
 window.mobileSupport = new MobileSupport();

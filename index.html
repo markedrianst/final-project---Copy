@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus Indoor Street View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -29,22 +30,44 @@
         
     <div id="loading-screen" class="loading-screen">
     <div class="spinner"></div>
-    <p>Loading panorama...</p>
+    <p>Loading panorama..</p>
 </div>
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> 
+    
+    
+    <!-- SD BLDG. -->
     <script src="js/data/SDbldg/entrance.js"></script>
     <script src="js/data/SDbldg/sdGroundFloor.js"></script>
     <script src="js/data/SDbldg/sd2ndfloor.js"></script>
     <script src="js/data/SDbldg/sd3rdfloor.js"></script>
     <script src="js/data/SDbldg/sd4thfloor.js"></script>
+<!-- SCS BLDG -->
+    <script src="js/data/SCSbldg/1stfloorscs.js"></script>
+    <script src="js/data/SCSbldg/2ndfloorscs.js"></script>
+    <script src="js/data/SCSbldg/3rdfloorscs.js"></script>
+    <script src="js/data/SCSbldg/4thfloorscs.js"></script>
+<!-- HR BLDG -->
+    <!-- <script src="js/data/HRbldg/1stfloorhr.js"></script> -->
+    <!-- <script src="js/data/HRbldg/2ndfloorhr.js"></script>
+    <script src="js/data/HRbldg/3rdfloorhr.js"></script>
+    <script src="js/data/HRbldg/4thfloorhr.js"></script> -->
 
+<!-- OLF BLDG -->
+    <script src="js/data/OLFbldg/olfgroundfloor.js"></script>
+    <script src="js/data/SDtoOLF-hallway/sd-to-olf.js"></script>
+    <script src="js/data/OLFbldg/2ndfloorolf.js"></script>
+     <script src="js/data/OLFbldg/3rdfloorolf.js"></script>
+     <script src="js/data/OLFbldg/4thfloorolf.js"></script>
+
+    <script src="js/data/HRbldg/hr3rdfloor.js"></script>
+    <script src="js/data/HRbldg/hr1stfloor.js"></script>
+    <script src="js/data/HRbldg/hr2ndfloor.js"></script>
+    <script src="js/data/HRbldg/hr4thfloor.js"></script>
 
     <script src="js/data/index.js"></script>
-
-
     <script src="js/panorama-viewer.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/search.js"></script>

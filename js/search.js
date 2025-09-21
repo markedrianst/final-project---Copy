@@ -17,7 +17,7 @@ class SearchManager {
         });
 
         this.searchInput.addEventListener('focus', () => {
-            if (this.searchInput.value.trim() !== '') this.performSearch();
+            this.performSearch(); // Always perform search on focus, even if input is empty
         });
 
         document.addEventListener('click', (event) => {
@@ -77,13 +77,16 @@ class SearchManager {
         const searchTerm = this.searchInput.value.trim();
         const category = this.activeCategory;
 
+        // ✅ Show all results if searchTerm and category are empty
         if (searchTerm === '' && !category) {
-            this.hideResults();
+            this.displayResults([...panoramaData]); 
             return;
         }
 
-        let results = searchPanoramas(searchTerm);
+        // Start with all panoramas (ignoring searchTerm if empty)
+        let results = searchTerm === '' ? [...panoramaData] : searchPanoramas(searchTerm);
 
+        // Filter by category if selected
         if (category) {
             results = results.filter(p => {
                 const cats = Array.isArray(p.category) ? p.category : [p.category];
@@ -96,6 +99,15 @@ class SearchManager {
 
     displayResults(results) {
         this.searchResults.innerHTML = '';
+
+        // ✅ Show category header if filtering
+        if (this.activeCategory) {
+            const categoryHeader = document.createElement('div');
+            categoryHeader.className = 'results-category-header';
+            categoryHeader.textContent = `Showing: ${this.activeCategory}`;
+            this.searchResults.appendChild(categoryHeader);
+        }
+
         if (results.length === 0) {
             const noResults = document.createElement('div');
             noResults.className = 'search-result-item';
@@ -119,6 +131,7 @@ class SearchManager {
 
                 resultItem.addEventListener('click', () => {
                     this.navigateToPanorama(result.id);
+                    this.searchInput.blur(); // ✅ close keyboard on mobile
                 });
 
                 this.searchResults.appendChild(resultItem);

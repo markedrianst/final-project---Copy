@@ -49,11 +49,14 @@ header {
 }
 
 /* Category Bar */
-.category-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
+#category-bar {
+  margin: 10px;
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  gap: 5px;
 }
 
 .category-bar .category-btn {

@@ -1,20 +1,52 @@
 // Merge all category arrays into one dataset
 const panoramaData = [
   ...entrancePanoramas,
+  // SCS BUILDING
+  ...scsfirstfloor,
+  ...scssecondfloor,
+  ...scsthirdfloor,
+  ...scsfourthfloor,
+
+  // SD BUILDING
   ...sdGroundFloor,
   ...sd2ndFloor,
   ...sd3rdFloor,
-  ...sd4thfloor
+  ...sd4thfloor,
+
+  // HR BUILDING
+...hr1stfloor,
+...hr4thfloor,
+...hr3rdfloor,
+...hr2ndfloor,
+  // OLF BUILDING
+  ...olfbldg,
+  ...olf2ndbldg,
+  ...olf3rdbldg,
+  ...olf4thbldg,
+  ...sdtoolfbldg,
 
   // add other files here
 ];
+
+/**
+ * Build a quick lookup map for panoramas by ID (faster than .find())
+ */
+const panoramaMap = {};
+panoramaData.forEach(pano => {
+    panoramaMap[pano.id] = {
+        ...pano,
+        _preloadedTexture: null, // ✅ reserved for cached texture
+        _searchCache: (pano.name + " " + pano.description).toLowerCase() // ✅ pre-index for faster search
+    };
+});
+
 /**
  * Helper function to get panorama data by ID
  * @param {string} id - The panorama ID to find
  * @returns {Object|null} - The panorama data object or null if not found
  */
 function getPanoramaById(id) {
-    return panoramaData.find(panorama => panorama.id === id) || null;
+    return panoramaMap[id] || null;
 }
 
 /**
@@ -24,11 +56,10 @@ function getPanoramaById(id) {
  */
 function searchPanoramas(searchTerm) {
     if (!searchTerm) return [];
-    
+
     const term = searchTerm.toLowerCase();
-    return panoramaData.filter(panorama => 
-        panorama.name.toLowerCase().includes(term) || 
-        panorama.description.toLowerCase().includes(term)
+    return Object.values(panoramaMap).filter(panorama =>
+        panorama._searchCache.includes(term)
     );
 }
 
@@ -39,7 +70,9 @@ function searchPanoramas(searchTerm) {
  */
 function getConnectedPanoramas(id) {
     const panorama = getPanoramaById(id);
-    if (!panorama) return [];
-    
-    return panorama.connections.map(connId => getPanoramaById(connId)).filter(Boolean);
+    if (!panorama || !Array.isArray(panorama.connections)) return [];
+
+    return panorama.connections
+        .map(connId => getPanoramaById(connId))
+        .filter(Boolean);
 }
